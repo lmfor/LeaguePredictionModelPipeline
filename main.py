@@ -21,6 +21,21 @@ champs_loader = RetrieveData(champs_cfg)
 matches_df = matches_loader.load_df()
 champs_df = champs_loader.load_df()
 
+"""
+====== NOTES =====
 
-print(matches_df.head())
-print(champs_df.head())
+For Matches:
+0 -> Blue Side win
+1 -> Red Side win
+
+There are NO duplicate gameids!
+"""
+
+
+print(matches_df.shape) # 5612 Matches, 16 Metrics
+print(matches_df.columns.tolist())
+# ['Unnamed: 0', 'gameid', 'league', 'blueteam', 'redteam', 'bluetop', 'bluejungle', 'bluemid', 'blueadc', 'bluesupport', 'redtop', 'redjungle', 
+# 'redmid', 'redadc', 'redsupport', 'result']
+
+
+
