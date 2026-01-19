@@ -3,7 +3,6 @@ import pandas as pd
 import tensorflow as tf
 import keras
 from keras import layers
-from src.data import DatasetConfig, RetrieveData
 
 
 # Prepare df
@@ -66,7 +65,20 @@ class Model:
     def build_looksups(self):
         if self.df_train is None:
             raise RuntimeError("Call split() before build_lookups()")
-    # ...
+
+        # ==
+        teams = pd.concat([self.df_train["blueteam"], self.df_train["redteam"]]).astype(str).unique()
+       
+        champs = pd.concat([
+            self.df_train["bluetop"], self.df_train["bluejungle"], self.df_train["bluemid"],
+            self.df_train["blueadc"], self.df_train["bluesupport"],
+            self.df_train["redtop"], self.df_train["redjungle"], self.df_train["redmid"],
+            self.df_train["redadc"], self.df_train["redsupport"],
+        ], axis=0).astype(str).unique()
+        
+        self.team_lookup = layers.StringLookup(vocabulary=teams, mask_token=None, num_oov_indices=1)
+        self.champs_lookup = layers.StringLookup(vocabulary=champs, mask_token=None, num_oov_indices=1)
+        return self
     
     def _df_to_ds(
             self, 
