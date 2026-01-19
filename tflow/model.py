@@ -26,7 +26,7 @@ class Model:
         self.df = df.dropna(subset=FEATURE_COLS + [LABEL]).copy()
         self.df[LABEL] = self.df[LABEL].astype("int32")
         
-        # setup later
+        # INIT as NONE for error control
         self.team_lookup = None
         self.champ_lookup = None
         self.model = None
@@ -39,7 +39,28 @@ class Model:
     
     # Split into training & eval datasets
     def split(self, train=0.8, val=0.1):
-        pass
+        rng = np.random.default_rng(self.seed)
+        idx = np.arange(len(self.df))
+        rng.shuffle(idx)
+        
+        n = len(idx)
+        n_train = int(train * n)
+        n_val = int(val * n)
+        
+        # Allocating training / val / test data
+        train_idx = idx[:n_train]
+        val_idx = idx[n_train:n_train+n_val]
+        test_idx = idx[n_train + n_val:]
+        
+        # initialize vals
+        self.df_train = self.df.iloc[train_idx].reset_index(drop=True)
+        self.df_val = self.df.iloc[val_idx].reset_index(drop=True)
+        self.df_test = self.df.iloc[test_idx].reset_index(drop=True)
+        
+        return self
+
+        
+        
     
     # build vocab + lookups
     def build_looksups(self):
