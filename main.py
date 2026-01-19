@@ -31,11 +31,3 @@ For Matches:
 There are NO duplicate gameids!
 """
 
-
-print(matches_df.shape) # 5612 Matches, 16 Metrics
-print(matches_df.columns.tolist())
-# ['Unnamed: 0', 'gameid', 'league', 'blueteam', 'redteam', 'bluetop', 'bluejungle', 'bluemid', 'blueadc', 'bluesupport', 'redtop', 'redjungle', 
-# 'redmid', 'redadc', 'redsupport', 'result']
-
-
-
