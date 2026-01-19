@@ -4,30 +4,24 @@ import matplotlib.pyplot as plt
 
 # Files
 from src.data import DatasetConfig, RetrieveData
+from tflow.model import Model
 
-matches_cfg = DatasetConfig(
-    dataset="xmorra/lol2020esports",
-    file="matches2020.csv",
-)
-
+"""
 champs_cfg = DatasetConfig(
     dataset="xmorra/lol2020esports",
     file="champion_stats.csv"
 )
-
-matches_loader = RetrieveData(matches_cfg)
-champs_loader = RetrieveData(champs_cfg)
-
-matches_df = matches_loader.load_df()
-champs_df = champs_loader.load_df()
-
 """
-====== NOTES =====
 
-For Matches:
-0 -> Blue Side win
-1 -> Red Side win
+# ==== IMPORT DATA & INIT DATAFRAME ====
+cfg = DatasetConfig(dataset="xmorra/lol2020esports",file="matches2020.csv")
+df = RetrieveData(cfg).load_df()
 
-There are NO duplicate gameids!
-"""
+# ==== INITIALIZE AND FIT MODEL ====
+# model = Model(df).split()build_looksups().build_model()
+
+
+
+
+
 
