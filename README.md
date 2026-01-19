@@ -1,4 +1,4 @@
-# Kaggle Dataset Loader + Q&A Model
+# Kaggle Dataset Loader + Prediction Model
 
 ## About
 This repo provides Python utilities to download and load Kaggle datasets as pandas DataFrames.  
@@ -22,3 +22,4 @@ uv sync
 
 python main.py
 ```
+
