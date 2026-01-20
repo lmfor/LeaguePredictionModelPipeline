@@ -225,9 +225,9 @@ class Model:
             raise RuntimeError("[PREDICTION ERROR] ! Train/build model first.")
         
         x = {k: tf.convert_to_tensor([str(row[k])]) for k in FEATURE_COLS}
-        p = float(self.model.predict(x, verbose=0)[0][0]) #type: ignore
+        probability_blue_win = float(self.model.predict(x, verbose=0)[0][0]) #type: ignore
         
-        return p
+        return probability_blue_win
         
     
         
