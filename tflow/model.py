@@ -187,6 +187,11 @@ class Model:
     def predict_proba_one(self, row:dict) -> float:
         if self.model is None:
             raise RuntimeError("[PREDICTION ERROR] ! Train/build model first.")
-        return 0.1
+        
+        x = {k: tf.convert_to_tensor([str(row[k])]) for k in FEATURE_COLS}
+        p = float(self.model.predict(x, verbose=0)[0][0]) #type: ignore
+        
+        return p
+        
     
         
