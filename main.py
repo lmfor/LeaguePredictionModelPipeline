@@ -54,8 +54,8 @@ while True:
     prediction = float(loaded_model.predict(x,verbose=0)[0][0]) #type: ignore
     
     print("\n" + "="*30)
-    print(f"Blue Win Probability: {p:.2%}")
-    print(f"Predicted Winner: {'BLUE' if p >= 0.5 else 'RED'}")
+    print(f"Blue Win Probability: {prediction:.2%}")
+    print(f"Predicted Winner: {'BLUE' if prediction >= 0.5 else 'RED'}")
     print("="*30)
     
     cont = input("\nPredict another match? (y/n): ").lower()
