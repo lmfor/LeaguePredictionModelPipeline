@@ -158,7 +158,16 @@ class Model:
         if self.model is None:
             raise RuntimeError("Call build_model() before fit()")
         
-        pass
+        train_ds = self._df_to_ds(self.df_train, shuffle=True, batch_size=batch_size) # type: ignore
+        val_ds = self._df_to_ds(self.df_val, shuffle=False, batch_size=batch_size) # type: ignore
+        
+        callbacks = [
+            keras.callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=5, restore_best_weights=True),
+        ]
+        
+        return self.model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks)
+    
+    
     
     def evaluate(self, batch_size=128):
         pass
