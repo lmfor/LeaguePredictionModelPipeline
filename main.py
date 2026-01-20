@@ -18,7 +18,7 @@ cfg = DatasetConfig(dataset="xmorra/lol2020esports",file="matches2020.csv")
 df = RetrieveData(cfg).load_df()
 
 # ==== INITIALIZE AND FIT MODEL ====
-model = Model(df).split().build_looksups().build_model()
+model = Model(df).split().augment_swap_sides().build_looksups().build_model()
 model.fit(epochs=400)
 
 print(f"Test: {model.evaluate()}")
