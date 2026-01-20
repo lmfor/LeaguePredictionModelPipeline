@@ -28,7 +28,8 @@ df = RetrieveData(cfg).load_df()
 # ==== LOAD MODEL AND PREDICT ====
 loaded_model = models.load_model("models/draft_winner_tf.keras")
 
-draft = {
+# 2025 Worlds Finals T1 vs KT Game 1
+draft_1  = {
     "league": ["LCK"],
     "blueteam": ["KT Rolster"],
     "redteam": ["T1"], 
@@ -44,7 +45,25 @@ draft = {
     "redsupport" : ["Poppy"],
 }
 
-x = {k: tf.constant(v, dtype=tf.string) for k,v in draft.items()}
+# 2021 LCK Summer Finals T1 vs DK Game 2
+draft_2 = {
+    "league": ["LCK"],
+    "blueteam": ["DAMWON Gaming"],
+    "redteam": ["T1"], 
+    "bluetop": ["Camille"],
+    "bluejungle" : ["Olaf"],
+    "bluemid" : ["Kassadin"],
+    "blueadc" : ["Ziggs"],
+    "bluesupport" : ["Leona"],
+    "redtop": ["Ornn"],
+    "redjungle" : ["Khazix"],
+    "redmid" : ["Leblanc"],
+    "redadc" : ["Vayne"],
+    "redsupport" : ["Trundle"],
+}
+
+# x = {k: tf.constant(v, dtype=tf.string) for k,v in draft_1.items()}
+x = {k: tf.constant(v, dtype=tf.string) for k,v in draft_2.items()}
 
 p = float(loaded_model.predict(x,verbose=0)[0][0]) # type: ignore
 print("Blue win proabability: ", p)
