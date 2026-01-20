@@ -19,7 +19,7 @@ df = RetrieveData(cfg).load_df()
 
 # ==== INITIALIZE AND FIT MODEL ====
 model = Model(df).split().build_looksups().build_model()
-model.fit(epochs=60)
+model.fit(epochs=400)
 
 print(f"Test: {model.evaluate()}")
 model.save()
