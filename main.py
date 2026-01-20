@@ -16,8 +16,8 @@ champs_cfg = DatasetConfig(
 """
 
 # ==== IMPORT DATA & INIT DATAFRAME ====
-cfg = DatasetConfig(dataset="xmorra/lol2020esports",file="matches2020.csv")
-df = RetrieveData(cfg).load_df()
+# cfg = DatasetConfig(dataset="xmorra/lol2020esports",file="matches2020.csv")
+# df = RetrieveData(cfg).load_df()
 
 def get_user_input():
     print("\n--- LoL WinSide Predictor ---")
