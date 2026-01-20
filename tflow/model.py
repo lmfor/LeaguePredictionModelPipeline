@@ -168,9 +168,10 @@ class Model:
         return self.model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks)
     
     
-    
     def evaluate(self, batch_size=128):
-        pass
+        
+        test_ds = self._df_to_ds(self.df_test, shuffle=False, batch_size=batch_size) # type: ignore
+        return self.model.evaluate(test_ds) # type: ignore
     
     def save(self, path : str = "models/draft_winner_tf.keras"):
         if self.model is None:
