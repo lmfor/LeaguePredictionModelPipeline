@@ -57,6 +57,13 @@ class Model:
         self.df_val = self.df.iloc[val_idx].reset_index(drop=True)
         self.df_test = self.df.iloc[test_idx].reset_index(drop=True)
         
+        print(
+            "Label means (train / val / test):",
+            self.df_train['result'].mean(),
+            self.df_val["result"].mean(),
+            self.df_test["result"].mean(),
+        )
+        
         return self
 
         
@@ -136,12 +143,17 @@ class Model:
             inputs.append(inp)
             embs.append(emb)
         
+        reg = keras.regularizers.l2(1e-4)
+
         x = layers.Concatenate()(embs)
-        for h in hidden:
-            x = layers.Dense(h,activation='relu')(x)
-            x = layers.Dropout(dropout)(x)
-            
-        out = layers.Dense(1, activation='sigmoid')(x)
+
+        x = layers.Dense(64, activation="relu", kernel_regularizer=reg)(x)
+        x = layers.Dropout(0.5)(x)
+
+        x = layers.Dense(32, activation="relu", kernel_regularizer=reg)(x)
+        x = layers.Dropout(0.5)(x)
+
+        out = layers.Dense(1, activation="sigmoid")(x)
         
         self.model = keras.Model(inputs=inputs, outputs=out)
         self.model.compile(
@@ -162,7 +174,7 @@ class Model:
         val_ds = self._df_to_ds(self.df_val, shuffle=False, batch_size=batch_size) # type: ignore
         
         callbacks = [
-            keras.callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=5, restore_best_weights=True),
+            keras.callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=10, restore_best_weights=True),
         ]
         
         return self.model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks)
