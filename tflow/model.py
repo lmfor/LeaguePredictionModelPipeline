@@ -134,7 +134,7 @@ class Model:
             
             inp, emb = embed_input(col, self.champ_lookup, champ_dim)
             inputs.append(inp)
-            emb.append(emb)
+            embs.append(emb)
         
         x = layers.Concatenate()(embs)
         for h in hidden:
