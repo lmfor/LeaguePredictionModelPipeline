@@ -126,7 +126,7 @@ class Model:
         for col in ["blueteam", "redteam"]:
             inp, emb = embed_input(col, self.team_lookup, team_dim)
             inputs.append(inp)
-            emb.append(emb)
+            embs.append(emb)
             
         for col in [
             "bluetop", "bluejungle", "bluemid", "blueadc", "bluesupport",
