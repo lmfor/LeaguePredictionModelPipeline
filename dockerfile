@@ -19,7 +19,7 @@ COPY pyproject.toml uv.lock ./
 
 # venv & install
 RUN uv python install 3.11
-RUN uv sync --frozen
+RUN uv sync --python 3.11
 
 # COPY rest of repo
 COPY . .
