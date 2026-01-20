@@ -35,6 +35,30 @@ class Model:
         self.df_val = None
         self.df_test = None
         
+    # augment side swaps
+    def augment_swap_sides(self):
+        if self.df_train is None:
+            raise RuntimeError("Call split() before augment_swap_sides().")
+        
+        df = self.df_train.copy()
+        
+        # swap teams
+        swap = df.copy()
+        swap["blueteam"], swap["redteam"] = df["redteam"], df["blueteam"]
+        
+        # swamp champs
+        blue_cols = ["bluetop", "bluejungle", "bluemid", "blueadc", "bluesupport"]
+        red_cols = ["redtop", "redjungle", "redmid", "redadc", "redsupport"]
+        
+        for b, r in zip(blue_cols, red_cols):
+            swap[b] = df[r]
+            swap[r] = df[b]
+            
+        # flip the label(s)
+        swap["result"] = 1 - df["result"]
+        
+        self.df_train = pd.concat([swap, df], ignore_index=True)
+        return self
         
     
     # Split into training & eval datasets
