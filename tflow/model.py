@@ -3,6 +3,7 @@ import pandas as pd
 import tensorflow as tf
 import keras
 from keras import layers
+from keras.optimizers import Adam
 
 
 # Prepare df
@@ -77,15 +78,14 @@ class Model:
         ], axis=0).astype(str).unique()
         
         self.team_lookup = layers.StringLookup(vocabulary=teams, mask_token=None, num_oov_indices=1)
-        self.champs_lookup = layers.StringLookup(vocabulary=champs, mask_token=None, num_oov_indices=1)
+        self.champ_lookup = layers.StringLookup(vocabulary=champs, mask_token=None, num_oov_indices=1)
         return self
     
     def _df_to_ds(
             self, 
             dataframe : pd.DataFrame, 
             shuffle : bool, 
-            batch_size: int
-        ):
+            batch_size: int):
         
         x = {col: dataframe[col].astype(str).values for col in FEATURE_COLS}
         y = dataframe[LABEL].values
@@ -102,9 +102,56 @@ class Model:
             team_dim : int = 8, 
             champ_dim: int = 16, 
             hidden=(128,68), 
-            dropout=0.25
-        ):
-        pass
+            dropout=0.25):
+        
+        if self.team_lookup is None or self.champ_lookup is None:
+            raise RuntimeError("Call build_lookups() before calling build_model()")
+        
+        def embed_input(name: str, lookup: layers.StringLookup, dim: int):
+            inp = keras.Input(shape=(1,), name=name, dtype=tf.string)
+            ids = lookup(inp)
+            emb = layers.Embedding(input_dim=lookup.vocabulary_size(), output_dim=dim)(ids)
+            emb = layers.Reshape((dim,))(emb)
+            
+            return inp, emb
+        
+        inputs, embs = [], []
+        
+        league_vocab = self.df_train["league"].astype(str).unique() #type: ignore
+        self.league_lookup = layers.StringLookup(vocabulary=league_vocab, mask_token=None, num_oov_indices=1)
+        inp, emb = embed_input("league", self.league_lookup, dim=4)
+        inputs.append(inp)
+        embs.append(emb)
+        
+        for col in ["blueteam", "redteam"]:
+            inp, emb = embed_input(col, self.team_lookup, team_dim)
+            inputs.append(inp)
+            emb.append(emb)
+            
+        for col in [
+            "bluetop", "bluejungle", "bluemid", "blueadc", "bluesupport",
+            "redtop", "redjungle", "redmid", "redadc", "redsupport", ]:
+            
+            inp, emb = embed_input(col, self.champ_lookup, champ_dim)
+            inputs.append(inp)
+            emb.append(emb)
+        
+        x = layers.Concatenate()(embs)
+        for h in hidden:
+            x = layers.Dense(h,activation='relu')(x)
+            x = layers.Dropout(dropout)(x)
+            
+        out = layers.Dense(1, activation='sigmoid')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=out)
+        self.model.compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy', keras.metrics.AUC(name='auc')]
+        )
+        
+        return self
+            
     
     # train & eval & save
     def fit(self, epochs=60, batch_size=128):
