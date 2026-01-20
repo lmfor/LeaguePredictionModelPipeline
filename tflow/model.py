@@ -220,7 +220,7 @@ class Model:
     
     
     # Prediction
-    def predict_proba_one(self, row:dict) -> float:
+    def predict_blue_side_win(self, row:dict) -> float:
         if self.model is None:
             raise RuntimeError("[PREDICTION ERROR] ! Train/build model first.")
         
