@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml uv.lock ./
 
 # venv & install
+RUN uv python install 3.11
 RUN uv sync --frozen
 
 # COPY rest of repo
