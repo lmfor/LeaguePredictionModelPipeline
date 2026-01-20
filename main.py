@@ -49,9 +49,9 @@ loaded_model = models.load_model(MODEL_PATH)
 while True:
     draft = get_user_input()
     
-    x = {k: tf.constant(v, dtype=tf.string) for k,v in draft.items()}
-    
-    prediction = float(loaded_model.predict(x,verbose=0)[0][0]) #type: ignore
+    x = {k: tf.constant([v], dtype=tf.string) for k, v in draft.items()}  # batch size 1
+    y = loaded_model.predict(x, verbose=0) # type: ignore
+    prediction = float(tf.reshape(y, [-1])[0])
     
     print("\n" + "="*30)
     print(f"Blue Win Probability: {prediction:.2%}")
@@ -111,7 +111,7 @@ while True:
 #x1 = {k: tf.constant(v, dtype=tf.string) for k,v in draft_1.items()}
 #x2 = {k: tf.constant(v, dtype=tf.string) for k,v in draft_2.items()}
 
-#p = float(loaded_model.predict(x1,verbose=0)[0][0]) # type: ignore
+#p = float(loaded_model.predict(x,verbose=0)[0][0]) # type: ignore
 #print("Blue win proabability: ", p)
 #print("Predicted winner:", "Blue" if p >= 0.5 else "Red")
 
