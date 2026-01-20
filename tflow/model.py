@@ -86,7 +86,14 @@ class Model:
             shuffle : bool, 
             batch_size: int
         ):
-        pass
+        
+        x = {col: dataframe[col].astype(str).values for col in FEATURE_COLS}
+        y = dataframe[LABEL].values
+        ds = tf.data.Dataset.from_tensor_slices((x,y))
+        
+        if shuffle:
+            ds = ds.shuffle(len(dataframe), seed=self.seed, reshuffle_each_iteration=True)
+        return ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
     
     
     # Construct model
