@@ -177,7 +177,10 @@ class Model:
         if self.model is None:
             raise RuntimeError("[SAVE ERROR] ! No model to save.")
         
-        pass
+        import os
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        self.model.save(path)
+        return path
     
     
     # Prediction
