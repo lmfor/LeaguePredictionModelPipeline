@@ -15,9 +15,8 @@ lol2025 = LeagueData("data\\2025_LoL_esports_match_data_from_OraclesElixir.csv")
 # lck_teams = lol2025.get_teams_by_league(league_slug='LCK')
 
 lck_games = lol2025.get_teams_by_league('LCK')
+lck_games_gen = lol2025.generate_game_by_league('LCK')
 
-print(lol2025.get_csv().columns.tolist())
-# print(lck_games)
 
-        
-    
+game_1 = next(lck_games_gen)
+
