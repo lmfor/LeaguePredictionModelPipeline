@@ -16,32 +16,11 @@ class DatasetConfig:
     cache_dir : str = "data"            # Storage dir
     
     
-
-class RetrieveData:
-    """
-    Downloads and loads a KaggleHub dataset.
-    Returns a pandas DF or Path
-    """
-    def __init__(self, cfg: DatasetConfig):
-        self.cfg = cfg
-        self.cache_dir = Path(cfg.cache_dir)
+class LoadCSV():
+    def __init__(self, local_path : str):
+        self.csv = pd.read_csv(local_path)
         
-    def download(self) -> Path:
-        import kagglehub
-            
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-            
-        # kagglehub ds returns a local string path
-        ds_path = Path(kagglehub.dataset_download(self.cfg.dataset))
-            
-        return ds_path
+    def _get_team_names(self):
+        return self.csv["teamname"].unique()
+        
     
-    def load_df(self) -> pd.DataFrame:
-        ds_path = self.download()
-        
-        if not self.cfg.file:
-            raise ValueError("You must set cfg.file='____.csv")
-        
-        file_path = ds_path / self.cfg.file
-        return pd.read_csv(file_path)
-        
