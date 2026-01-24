@@ -54,7 +54,8 @@ class Model:
         pass
     
     def _df_to_ds(self, dataframe: pd.DataFrame, shuffle: bool, batch_size: int):
-        """_summary_
+        """
+        pd.DataFrame --> tf.data.Dataset
 
         Args:
             dataframe (pd.DataFrame): _description_
