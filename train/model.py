@@ -36,7 +36,31 @@ class Model:
         self.cat_features = [f for f in CAT_FEATURES if f in df.columns]
         self.num_features = [f for f in NUM_FEATURES if f in df.columns]
         # concat
-        self.features = self.cat_features + self.num_features
+        self.feature_cols = self.cat_features + self.num_features
+        
+        # missing?
+        missing = (set(CAT_FEATURES + NUM_FEATURES) - set(self.feature_cols))
+        if missing: print(f"[INFO] Dropping missing columns: {sorted(missing)}")
+        
+        # drop rows missing a label or highlighted feature
+        self.df = df.dropna(subset=self.feature_cols + [LABEL]).copy()
+        self.df[LABEL] = self.df[LABEL].astype('int32') # translate result -> int32
+        
+        # double enforce dtype
+        for f in self.cat_features:
+            self.df[f] = self.df[f].astype(str)
+        for f in self.num_features:
+            self.df[f] = pd.to_numeric(self.df[f], errors='coerce')
+            
+        self.df = self.df.dropna(subset=self.num_features).copy()
+        
+        self.df_train = None
+        self.df_val = None
+        self.df_test = None
+        
+        self.lookups : dict[str, layers.StringLookup] = {}
+        self.normalizer : layers.Normalization | None = None
+        self.model : keras.Model | None = None
         
     def split(self, train=0.8, val=0.1):
         """_summary_
