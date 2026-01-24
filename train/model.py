@@ -99,7 +99,24 @@ class Model:
         """_summary_
         Build a lookup table for all non-numeric features so model can read them
         """
-        pass
+        if self.df_train is None:
+            raise RuntimeError("Call split() before calling build_lookups()")
+        
+        # build StringLookup for each categorical feature
+        for f in self.cat_features:
+            vocab = self.df_train[f].astype(str).unique()
+            self.lookups[f] = layers.StringLookup(
+                vocabulary=vocab,
+                mask_token = None,
+                num_oov_indices=1
+            )
+            
+        # normalizer for numeric block
+        if self.num_features:
+            self.normalizer = layers.Normalization()
+            self.normalizer.adapt(self.df_train[self.num_features].to_numpy().astype("float32"))
+            
+        return self
     
     def _df_to_ds(self, dataframe: pd.DataFrame, shuffle: bool, batch_size: int):
         """
