@@ -127,7 +127,20 @@ class Model:
             shuffle (bool): _description_
             batch_size (int): _description_
         """
-        pass
+        x = {}
+        
+        for f in self.cat_features:
+            x[f] = dataframe[f].astype(str).values
+        for f in self.num_features:
+            x[f] = dataframe[f].astype("float32").values
+            
+        y = dataframe[LABEL].values.astype("float32")
+        
+        ds = tf.data.Dataset.from_tensor_slices((x,y))
+        
+        if shuffle:
+            ds = ds.shuffle(len(dataframe), seed=self.seed, reshuffle_each_iteration=True)
+        return ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
     
     def build_model(self, cat_dim:int=8, hidden=(128,64), dropout=0.25, l2=1e-4):
         """
@@ -137,7 +150,48 @@ class Model:
             dropout (float, optional): _description_. Defaults to 0.25.
             l2 (_type_, optional): _description_. Defaults to 1e-4.
         """
-        pass
+        if not self.lookups:
+            raise RuntimeError("Call build_lookups() before calling build_model().")
+        
+        inputs, pieces = [], []
+        
+        # categorical embeddings
+        for f in self.cat_features:
+            inp = keras.Input(shape=(1,), name=f, dtype=tf.string)
+            ids = self.lookups[f](inp)
+            emb = layers.Embedding(self.lookups[f].vocabulary_size(), cat_dim)(ids)
+            emb = layers.Reshape((cat_dim,))(emb)
+            inputs.append(inp)
+            pieces.append(emb)
+        
+        # numeric block
+        if self.num_features:
+            num_inp = keras.Input(shape=(len(self.num_features),), name="numeric", dtype=tf.float32)
+            inputs.append(num_inp)
+            
+            xnum = num_inp
+            if self.normalizer is not None:
+                xnum = self.normalizer(xnum)
+            pieces.append(xnum)
+            
+        x = layers.Concatenate()(pieces) if len(pieces) > 1 else pieces[0]
+        
+        reg = keras.regularizers.l2(l2)
+        
+        for h in hidden:
+            x = layers.Dense(h, activation='relu', kernel_regularizer=reg)(x)
+            x = layers.Dropout(dropout)(x)
+            
+        out = layers.Dense(1, activation='sigmoid')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=out)
+        self.model.compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy', keras.metrics.AUC(name='auc')],
+        )
+        
+        return self
     
     def fit(self, epochs=60, batch_size=256):
         """
@@ -145,14 +199,29 @@ class Model:
             epochs (int, optional): _description_. Defaults to 60.
             batch_size (int, optional): _description_. Defaults to 256.
         """
-        pass
+        
+        if self.model is None:
+            raise RuntimeError("Call build_model() before fit().")
+        
+        train_ds = self._df_to_ds(self.df_train, shuffle=True, batch_size=batch_size) # type: ignore
+        val_ds = self._df_to_ds(self.df_val, shuffle=False, batch_size=batch_size) # type: ignore
+        
+        callbacks = [
+            keras.callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=8, restore_best_weights=True),
+        ]
+        
+        return self.model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks)
     
     def evaluate(self, batch_size=256):
         """
         Args:
             batch_size (int, optional): _description_. Defaults to 256.
         """
-        pass
+        if self.model is None:
+            raise RuntimeError("Train/build model first!")
+        
+        test_ds = self._df_to_ds(self.df_test, shuffle=False, batch_size=batch_size) #type: ignore
+        return self.model.evaluate(test_ds)
     
     def predict_proba(self, row:dict) -> float:
         """
@@ -162,4 +231,22 @@ class Model:
         Returns:
             float: _description_
         """
-        return 0.1
+        if self.model is None:
+            raise RuntimeError("Train/build model first.")
+        
+        x = {}
+        
+        for f in self.cat_features:
+            if f not in row:
+                raise KeyError(f"Missing feature {f} in row dict.")
+            x[f] = tf.convert_to_tensor(str(row[f]))
+            
+        if self.num_features:
+            nums = []
+            for f in self.num_features:
+                if f not in row:
+                    raise KeyError(f"Missing feature {f} in row dict.")
+                nums.append(float(row[f]))
+                
+            x['numeric'] = tf.convert_to_tensor([nums], dtype=tf.float32)
+        return float(self.model.predict(x, verbose=0)[0][0]) #type: ignore
