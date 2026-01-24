@@ -69,7 +69,31 @@ class Model:
             train (float, optional): % of data that will go to Training the Model | Defaults to 0.8.
             val (float, optional): % of data that will go to Evaluating the Model |. Defaults to 0.1.
         """
-        pass
+        rng = np.random.default_rng(self.seed)
+        idx = np.arange(len(self.df)) # indexes
+        rng.shuffle(idx) # shuffle indexes
+        
+        n = len(idx)
+        n_train = int(train * n)
+        n_val = int(val * n)
+        
+        train_idx = idx[:n_train]
+        val_idx = idx[n_train:n_train + n_val]
+        test_idx = idx[n_train + n_val:]
+        
+        self.df_train = self.df.iloc[train_idx].reset_index(drop=True)
+        self.df_val = self.df.iloc[val_idx].reset_index(drop=True)
+        self.df_test = self.df.iloc[test_idx].reset_index(drop=True)
+        
+        print(
+            "Label means (train / val / test)",
+            self.df_train[LABEL].mean(),
+            self.df_val[LABEL].mean(),
+            self.df_test[LABEL].mean(),
+        )
+        
+        return self
+        
     
     def build_lookups(self):
         """_summary_
